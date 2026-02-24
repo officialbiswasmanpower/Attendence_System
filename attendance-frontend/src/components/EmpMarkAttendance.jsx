@@ -1,0 +1,126 @@
+import { useEffect, useState } from "react";
+import API from "../api";
+import { motion } from "framer-motion";
+
+export default function EmpMarkAttendance() {
+  const [attendanceToday, setAttendanceToday] = useState(null); // { status, checkIn, checkOut }
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const employeeId = localStorage.getItem("employeeId"); // MongoDB _id
+  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  // ===== Fetch today's attendance =====
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const monthStr = todayStr.slice(0, 7);
+
+    API.get(`/attendance/employee/${employeeId}`, { params: { month: monthStr } })
+      .then((res) => {
+        const todayRecord = res.data.find((item) => item.date === todayStr);
+        if (todayRecord) setAttendanceToday(todayRecord);
+      })
+      .catch((err) => console.error("Fetch error:", err.response?.data || err.message));
+  }, [employeeId]);
+
+  // ===== Handle Check In =====
+  const handleCheckIn = async () => {
+    if (attendanceToday && attendanceToday.checkIn) return;
+
+    setLoading(true);
+    setMessage("");
+
+    const payload = {
+      date: todayStr,
+      records: [
+        {
+          employeeId,
+          status: "Present",
+          checkIn: new Date().toTimeString().slice(0, 5),
+          checkOut: ""
+        }
+      ]
+    };
+
+    try {
+      await API.post("/attendance", payload);
+      setAttendanceToday({ status: "Present", checkIn: payload.records[0].checkIn, checkOut: "" });
+      setMessage("Checked In ✅");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setMessage("Error checking in ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===== Handle Check Out =====
+  const handleCheckOut = async () => {
+    if (!attendanceToday || attendanceToday.checkOut) return;
+
+    setLoading(true);
+    setMessage("");
+
+    const payload = {
+      date: todayStr,
+      records: [
+        {
+          employeeId,
+          status: "Present",
+          checkIn: attendanceToday.checkIn,
+          checkOut: new Date().toTimeString().slice(0, 5)
+        }
+      ]
+    };
+
+    try {
+      await API.post("/attendance", payload);
+      setAttendanceToday({ ...attendanceToday, checkOut: payload.records[0].checkOut });
+      setMessage("Checked Out ✅");
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setMessage("Error checking out ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-md mx-auto mt-16 p-8 rounded-3xl shadow-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white"
+    >
+      <h2 className="text-3xl font-bold text-center mb-6">Employee Attendance</h2>
+      <p className="text-center mb-6">Date: <b>{todayStr}</b></p>
+
+      <div className="flex flex-col gap-4">
+        {/* Check In */}
+        <button
+          onClick={handleCheckIn}
+          disabled={loading || (attendanceToday && attendanceToday.checkIn)}
+          className={`py-3 rounded-xl font-bold transition ${
+            attendanceToday?.checkIn ? "bg-green-600 cursor-not-allowed" : "bg-green-400 hover:bg-green-500"
+          }`}
+        >
+          {attendanceToday?.checkIn ? `Checked In at ${attendanceToday.checkIn}` : "Check In"}
+        </button>
+
+        {/* Check Out */}
+        <button
+          onClick={handleCheckOut}
+          disabled={loading || !(attendanceToday?.checkIn) || (attendanceToday && attendanceToday.checkOut)}
+          className={`py-3 rounded-xl font-bold transition ${
+            attendanceToday?.checkOut ? "bg-red-600 cursor-not-allowed" : "bg-red-400 hover:bg-red-500"
+          }`}
+        >
+          {attendanceToday?.checkOut ? `Checked Out at ${attendanceToday.checkOut}` : "Check Out"}
+        </button>
+      </div>
+
+      {message && <p className="mt-4 text-center font-semibold">{message}</p>}
+    </motion.div>
+  );
+}
