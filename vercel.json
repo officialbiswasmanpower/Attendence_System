@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefix server && npm install --prefix attendance-frontend",
-  "buildCommand": "npm run build --prefix attendance-frontend",
-  "outputDirectory": "attendance-frontend/dist",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "",
   "functions": {
     "api/index.js": {
-      "includeFiles": "server/**"
+      "includeFiles": "server/"
     }
   },
   "rewrites": [
