@@ -16,26 +16,37 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection (cached for serverless)
+let cached = global._mongooseConnection;
+if (!cached) {
+  cached = global._mongooseConnection = { conn: null, promise: null };
+}
+
+const connectDB = async () => {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI).then((m) => m);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+};
+
+// Ensure DB is connected before handling any request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
-
-// MongoDB connection (cached for serverless)
-let isConnected = false;
-const connectDB = async () => {
-  if (isConnected) return;
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    isConnected = true;
-    console.log("MongoDB Connected ✅");
-  } catch (err) {
-    console.log("MongoDB connection error:", err);
-  }
-};
-
-connectDB();
 
 // Only listen when running locally (not on Vercel)
 if (!process.env.VERCEL) {

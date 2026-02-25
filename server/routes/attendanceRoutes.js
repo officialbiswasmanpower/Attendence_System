@@ -14,56 +14,51 @@ router.post("/", async (req, res) => {
     }
 
     const [year, month, day] = date.split("-");
-    const localDate = new Date(year, month - 1, day, 0, 0, 0);
-    const isoDate = localDate.toISOString();
+    const finalDate = new Date(year, month - 1, day); // ✅ FIXED
 
-   for (let record of records) {
+    for (let record of records) {
 
-  // 🔎 Step 1: Find employee by employeeId (EMP002)
-  const emp = await Employee.findOne({ employeeId: record.employeeId });
+      const emp = await Employee.findOne({ employeeId: record.employeeId });
+      if (!emp) {
+        return res.status(404).json({ error: `Employee not found: ${record.employeeId}` });
+      }
 
-  if (!emp) {
-    return res.status(404).json({ error: `Employee not found: ${record.employeeId}` });
-  }
-
-  // ✅ Step 2: Use Mongo _id
-  const empObjectId = emp._id;
-
-  await Attendance.findOneAndUpdate(
-    { date: isoDate, employee: empObjectId },
-    {
-      date: isoDate,
-      employee: empObjectId,
-      status: record.status,
-      checkIn: record.checkIn || "",
-      checkOut: record.checkOut || ""
-    },
-    { upsert: true, new: true }
-  );
-}
+      await Attendance.findOneAndUpdate(
+        { date: finalDate, employee: emp._id },
+        {
+          date: finalDate,
+          employee: emp._id,
+          status: record.status,
+          checkIn: record.checkIn || "",
+          checkOut: record.checkOut || ""
+        },
+        { upsert: true, new: true }
+      );
+    }
 
     res.json({ message: "Attendance saved/updated successfully" });
+
   } catch (error) {
     console.error("POST /attendance error:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-
 // ===== GET ATTENDANCE BY DATE =====
 router.get("/:date", async (req, res) => {
   try {
     const { date } = req.params;
     const [year, month, day] = date.split("-");
+
     const start = new Date(year, month - 1, day, 0, 0, 0);
     const end = new Date(year, month - 1, day, 23, 59, 59, 999);
 
-    // Populate employee to always get name, _id
     const attendance = await Attendance.find({
-      date: { $gte: start.toISOString(), $lte: end.toISOString() }
+      date: { $gte: start, $lte: end }
     }).populate("employee", "name _id").lean();
 
     res.json(attendance || []);
+
   } catch (error) {
     console.error("GET /attendance/:date error:", error);
     res.status(500).json({ error: error.message });

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefix server && npm install --prefix attendance-frontend",
+  "installCommand": "npm install && npm install --prefix attendance-frontend",
   "buildCommand": "npm run build --prefix attendance-frontend",
   "outputDirectory": "attendance-frontend/dist",
   "functions": {
