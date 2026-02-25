@@ -2,13 +2,22 @@
   "name": "attendence-system",
   "private": true,
   "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev:server": "node server/server.js",
+    "dev:client": "npm run dev --prefix attendance-frontend",
+    "dev": "npm run dev:server & npm run dev:client",
+    "build": "npm run build --prefix attendance-frontend"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.1",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "vercel": "^41.0.2"
   }
 }
