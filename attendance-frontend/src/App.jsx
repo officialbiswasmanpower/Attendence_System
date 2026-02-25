@@ -88,15 +88,30 @@ function App() {
           )}
 
           {/* Employee Routes */}
-     {role === "employee" && (
-  <Route path="/" element={<EmpMarkAttendance employeeId={employeeId} />}>
-    {/* Remove index redirect, navigate directly */}
-    {/* <Route index element={<Navigate to="mark-attendance" />} /> */}
-    <Route path="mark-attendance" element={<EmpMarkAttendance employeeId={employeeId} />} />
-    <Route path="my-attendance" element={<EmpMonthlyAttendance employeeId={employeeId} />} />
-    <Route path="my-details" element={<EmpDetails employeeId={employeeId} />} />
-    <Route path="my-salary" element={<EmpSalary employeeId={employeeId} />} />
-    <Route path="*" element={<Navigate to="/mark-attendance" replace />} />
+{role === "employee" && (
+  <Route path="/" element={<EmployeeLayout />}>
+
+    {/* ✅ Default page */}
+    <Route index element={<Navigate to="mark-attendance" replace />} />
+
+    <Route
+      path="mark-attendance"
+      element={<EmpMarkAttendance employeeId={employeeId} />}
+    />
+    <Route
+      path="my-attendance"
+      element={<EmpMonthlyAttendance employeeId={employeeId} />}
+    />
+    <Route
+      path="my-details"
+      element={<EmpDetails employeeId={employeeId} />}
+    />
+    <Route
+      path="my-salary"
+      element={<EmpSalary employeeId={employeeId} />}
+    />
+
+    <Route path="*" element={<Navigate to="mark-attendance" replace />} />
   </Route>
 )}
 
