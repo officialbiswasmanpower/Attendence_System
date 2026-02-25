@@ -8,7 +8,7 @@ export default function EmpMarkAttendance() {
   const [message, setMessage] = useState("");
 
   const employeeId = localStorage.getItem("employeeId"); // MongoDB _id
-  const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }); // IST YYYY-MM-DD
 
   // ===== Fetch today's attendance =====
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function EmpMarkAttendance() {
         {
           employeeId,
           status: "Present",
-          checkIn: new Date().toTimeString().slice(0, 5),
+          checkIn: new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false }),
           checkOut: ""
         }
       ]
@@ -69,7 +69,7 @@ export default function EmpMarkAttendance() {
           employeeId,
           status: "Present",
           checkIn: attendanceToday.checkIn,
-          checkOut: new Date().toTimeString().slice(0, 5)
+          checkOut: new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false })
         }
       ]
     };

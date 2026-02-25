@@ -61,7 +61,7 @@ export default function MarkAttendance() {
 
   // ===== Status Change =====
   const handleStatusChange = (employeeId, status) => {
-    const currentTime = new Date().toTimeString().slice(0, 5);
+    const currentTime = new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false });
 
     setRecords(prev => ({
       ...prev,

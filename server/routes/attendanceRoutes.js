@@ -75,12 +75,12 @@ router.get("/employee/:employeeId", async (req, res) => {
     if (!emp) return res.status(404).json({ error: "Employee not found" });
 
     const [year, mon] = month.split("-");
-    const start = new Date(year, mon - 1, 1, 0, 0, 0);
-    const end = new Date(year, mon, 0, 23, 59, 59, 999);
+    const start = new Date(Date.UTC(year, mon - 1, 1, 0, 0, 0));
+    const end = new Date(Date.UTC(year, mon, 0, 23, 59, 59, 999));
 
     const attendance = await Attendance.find({
       employee: emp._id,
-      date: { $gte: start.toISOString(), $lte: end.toISOString() }
+      date: { $gte: start, $lte: end }
     })
       .sort({ date: 1 })
       .lean();

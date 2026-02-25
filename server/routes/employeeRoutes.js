@@ -3,7 +3,7 @@ import Employee from "../models/Employee.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = express.Router();
 
@@ -160,25 +160,33 @@ router.post("/change-password", async (req, res) => {
   }
 });
 
-// ---------------- Profile Image Upload ---------------- //
+// ---------------- Profile Image Upload (Cloudinary) ---------------- //
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // folder must exist
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${req.params.employeeId}${ext}`);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-const upload = multer({ storage });
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/:employeeId/upload", upload.single("profileImage"), async (req, res) => {
   try {
     const employee = await Employee.findOne({ employeeId: req.params.employeeId });
     if (!employee) return res.status(404).json({ message: "Employee not found" });
 
-    employee.profileImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "attendance-profiles", public_id: req.params.employeeId, overwrite: true },
+        (error, result) => {
+          if (result) resolve(result);
+          else reject(error);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    employee.profileImage = result.secure_url;
     await employee.save();
 
     res.json(employee);
