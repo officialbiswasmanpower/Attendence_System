@@ -3,13 +3,11 @@ import api from "../api";
 
 function Dashboard() {
   // Get today's date in local time
-  const getLocalToday = () => {
-    const t = new Date();
-    const year = t.getFullYear();
-    const month = String(t.getMonth() + 1).padStart(2, "0");
-    const day = String(t.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+const getLocalToday = () => {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata"
+  });
+};
 
   const [employees, setEmployees] = useState([]);
   const [attendance, setAttendance] = useState([]);

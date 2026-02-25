@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
     }
 
     const [year, month, day] = date.split("-");
-    const finalDate = new Date(year, month - 1, day); // ✅ FIXED
+    const finalDate = new Date(Date.UTC(year, month - 1, day)); // ✅ FIXED
 
     for (let record of records) {
 
@@ -49,9 +49,8 @@ router.get("/:date", async (req, res) => {
   try {
     const { date } = req.params;
     const [year, month, day] = date.split("-");
-
-    const start = new Date(year, month - 1, day, 0, 0, 0);
-    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+    const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
     const attendance = await Attendance.find({
       date: { $gte: start, $lte: end }
