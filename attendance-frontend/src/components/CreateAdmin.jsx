@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../api";
 
 export default function CreateAdmin() {
   const [username, setUsername] = useState("");
@@ -39,8 +39,8 @@ export default function CreateAdmin() {
 
       const token = localStorage.getItem("token");
 
-      await axios.post(
-        "http://localhost:5000/api/admin/create",
+      await API.post(
+        "/admin/create",
         {
           username,
           password,

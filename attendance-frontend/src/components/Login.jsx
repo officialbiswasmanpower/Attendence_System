@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login({ setRole, setEmployeeId }) {
@@ -28,10 +28,10 @@ export default function Login({ setRole, setEmployeeId }) {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/employees/login",
-        { employeeId, password }
-      );
+      const res = await API.post("/employees/login", {
+        employeeId,
+        password,
+      });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", "employee");
@@ -56,10 +56,10 @@ export default function Login({ setRole, setEmployeeId }) {
     try {
       setLoading(true);
 
-      await axios.post(
-        "http://localhost:5000/api/employees/set-password",
-        { employeeId, password }
-      );
+      await API.post("/employees/set-password", {
+        employeeId,
+        password,
+      });
 
       showMessage("success", "Password created successfully!");
       setMode("login");
@@ -78,10 +78,10 @@ export default function Login({ setRole, setEmployeeId }) {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        { username: adminUsername, password }
-      );
+      const res = await API.post("/auth/login", {
+        username: adminUsername,
+        password,
+      });
 
       const { token, role, pages } = res.data;
 
