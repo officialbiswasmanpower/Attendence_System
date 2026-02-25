@@ -3,7 +3,7 @@ import API from "../api";
 
 export default function EmpSalary({ employeeId }) {
   const [salaryInfo, setSalaryInfo] = useState(null);
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }).slice(0, 7));
 
   useEffect(() => {
     const fetchSalary = async () => {

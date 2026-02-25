@@ -33,11 +33,13 @@ export default function Login({ setRole, setEmployeeId }) {
         password,
       });
 
+      const empRole = res.data.employee.role || "employee";
+
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", "employee");
+      localStorage.setItem("role", empRole);
       localStorage.setItem("employeeId", res.data.employee.employeeId);
 
-      setRole("employee");
+      setRole(empRole);
       setEmployeeId(res.data.employee.employeeId);
 
       navigate("/");
@@ -83,11 +85,12 @@ export default function Login({ setRole, setEmployeeId }) {
         password,
       });
 
-      const { token, role, pages } = res.data;
+      const { token, role, pages, employeeId: empId } = res.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
       localStorage.setItem("pages", JSON.stringify(pages || []));
+      if (empId) localStorage.setItem("employeeId", empId);
 
       setRole(role);
 

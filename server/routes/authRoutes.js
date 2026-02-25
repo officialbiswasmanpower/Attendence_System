@@ -8,33 +8,33 @@ import Admin from "../models/Admin.js";
 const router = express.Router();
 
 
-// 🔑 LOGIN (Employee Based)
+// 🔑 LOGIN (Admin / Superadmin / Subadmin)
 router.post("/login", async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password } = req.body;
 
-    let user;
+    // Search Admin collection first
+    let user = await Admin.findOne({ username });
 
-    if (role === "employee") {
-      user = await Employee.findOne({ employeeId: username });
-    } else {
-      user = await Admin.findOne({ username });
+    // If not found in Admin, search Employee collection for admin/subadmin roles
+    if (!user) {
+      user = await Employee.findOne({
+        $or: [{ employeeId: username }, { email: username }],
+        role: { $in: ["admin", "subadmin", "superadmin"] }
+      });
     }
 
     if (!user) {
-      console.log("User not found:", username, role);
       return res.status(400).json({ message: "User not found" });
     }
 
     if (!user.password) {
-      console.log("No password set for user:", username);
       return res.status(400).json({ message: "No login access" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      console.log("Invalid password for user:", username);
       return res.status(400).json({ message: "Invalid password" });
     }
 
@@ -45,13 +45,14 @@ router.post("/login", async (req, res) => {
     );
 
     res.json({
-  token,
-  role: user.role,
-  pages: user.pages || [],
-  _id: user._id   // ✅ ADD THIS
-});
+      token,
+      role: user.role,
+      pages: user.pages || [],
+      _id: user._id,
+      employeeId: user.employeeId || null
+    });
   } catch (err) {
-    console.error("Login route error:", err); // <--- Add this
+    console.error("Login route error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

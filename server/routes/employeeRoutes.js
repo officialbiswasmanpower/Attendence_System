@@ -126,12 +126,19 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
     const token = jwt.sign(
-      { id: employee._id, employeeId: employee.employeeId },
+      { id: employee._id, employeeId: employee.employeeId, role: employee.role },
       process.env.JWT_SECRET || "secret123",
       { expiresIn: "1d" }
     );
 
-    res.json({ token, employee: { employeeId: employee.employeeId, name: employee.name } });
+    res.json({
+      token,
+      employee: {
+        employeeId: employee.employeeId,
+        name: employee.name,
+        role: employee.role
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
