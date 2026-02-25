@@ -89,7 +89,7 @@ function App() {
 
           {/* Employee Routes */}
      {role === "employee" && (
-  <Route path="/" element={<EmployeeLayout />}>
+  <Route path="/" element={<EmpMarkAttendance employeeId={employeeId} />}>
     {/* Remove index redirect, navigate directly */}
     {/* <Route index element={<Navigate to="mark-attendance" />} /> */}
     <Route path="mark-attendance" element={<EmpMarkAttendance employeeId={employeeId} />} />
