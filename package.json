@@ -17,6 +17,6 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.1",
     "multer": "^2.0.2",
-    "vercel": "^50.23.2"
+    "vercel": "^41.0.2"
   }
 }
