@@ -52,8 +52,8 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 
-// Only listen when running locally (not on Vercel)
-if (!process.env.VERCEL) {
+// Only listen when running locally (not on Vercel serverless)
+if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () =>
     console.log(`Server running on port ${PORT} 🚀`)
