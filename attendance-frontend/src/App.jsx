@@ -9,6 +9,7 @@ import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import MonthlyAttendance from "./components/MonthlyAttendance";
 import CreateAdmin from "./components/CreateAdmin";
+import ChangeEmployeePassword from "./components/ChangeEmployeePassword";
 
 // Employee components
 import EmpSidebar from "./components/EmpSidebar";
@@ -66,6 +67,7 @@ function App() {
                   <Route path="mark-attendance" element={<MarkAttendance />} />
                   <Route path="MonthlyAttendance" element={<MonthlyAttendance />} />
                   <Route path="create-admin" element={<CreateAdmin />} />
+                  <Route path="change-password" element={<ChangeEmployeePassword />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}
@@ -75,6 +77,7 @@ function App() {
                   <Route path="employees" element={<EmployeeList />} />
                   <Route path="mark-attendance" element={<MarkAttendance />} />
                   <Route path="MonthlyAttendance" element={<MonthlyAttendance />} />
+                  <Route path="change-password" element={<ChangeEmployeePassword />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}

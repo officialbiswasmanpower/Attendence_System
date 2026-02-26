@@ -6,7 +6,7 @@
     "start": "node server/server.js",
     "dev:server": "node server/server.js",
     "dev:client": "npm run dev --prefix attendance-frontend",
-    "dev": "npm run dev:server & npm run dev:client",
+
     "build": "npm run build --prefix attendance-frontend"
   },
   "dependencies": {

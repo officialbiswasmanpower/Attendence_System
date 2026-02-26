@@ -9,7 +9,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
      { path: "/mark-attendance", name: "Mark Attendance" },
     { path: "/employees", name: "Add Employees" },
     { path: "/MonthlyAttendance", name: "Monthly Attendance" },
-    {path: "/create-admin", name: "Create Admin" }
+    { path: "/change-password", name: "Change Password" },
+    { path: "/create-admin", name: "Create Admin" }
 
   ];
 
