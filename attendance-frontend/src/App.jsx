@@ -22,36 +22,38 @@ import EmpSalary from "./components/EmpSalary";
 import Login from "./components/Login";
 import EmpTopbar from "./components/EmpTopbar";
 
+function AdminLayout({ sidebarOpen, setSidebarOpen }) {
+  return (
+    <div className="flex min-h-dvh bg-slate-50">
+      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <Topbar setSidebarOpen={setSidebarOpen} />
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function EmployeeLayout({ sidebarOpen, setSidebarOpen }) {
+  return (
+    <div className="flex min-h-dvh bg-slate-50">
+      <EmpSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <EmpTopbar setSidebarOpen={setSidebarOpen} profileImage="/image.png" />
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [role, setRole] = useState(localStorage.getItem("role"));
   const [employeeId, setEmployeeId] = useState(localStorage.getItem("employeeId"));
-
-  // Admin Layout with nested routes
-  const AdminLayout = () => (
-    <div className="flex h-screen">
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Topbar setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
-
-  // Employee Layout with nested routes
-  const EmployeeLayout = () => (
-    <div className="flex h-screen">
-      <EmpSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <EmpTopbar setSidebarOpen={setSidebarOpen} profileImage="/image.png" />
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
 
   return (
     <BrowserRouter>
@@ -59,7 +61,7 @@ function App() {
         <Routes>
           {/* Admin / Superadmin / Subadmin Routes */}
           {(role === "admin" || role === "superadmin" || role === "subadmin") && (
-            <Route path="/" element={<AdminLayout />}>
+            <Route path="/" element={<AdminLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}>
               {role === "superadmin" && (
                 <>
                   <Route index element={<Dashboard />} />
@@ -92,7 +94,7 @@ function App() {
 
           {/* Employee Routes */}
 {role === "employee" && (
-  <Route path="/" element={<EmployeeLayout />}>
+  <Route path="/" element={<EmployeeLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}>
 
     {/* ✅ Default page */}
     <Route index element={<Navigate to="mark-attendance" replace />} />

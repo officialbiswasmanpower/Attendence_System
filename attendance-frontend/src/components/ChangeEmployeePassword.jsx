@@ -95,9 +95,9 @@ export default function ChangeEmployeePassword() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6 gap-6">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-gray-100 p-3 sm:gap-6 sm:p-6">
       {/* Change Employee Password */}
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Change Employee Password
         </h2>
@@ -151,7 +151,7 @@ export default function ChangeEmployeePassword() {
 
       {/* Superadmin Own Password */}
       {role === "superadmin" && (
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8">
+        <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Change My Password
           </h2>

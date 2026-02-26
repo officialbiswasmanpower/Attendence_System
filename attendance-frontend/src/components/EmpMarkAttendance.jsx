@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import API from "../api";
 import { motion } from "framer-motion";
 
+void motion;
+
 export default function EmpMarkAttendance() {
   const [attendanceToday, setAttendanceToday] = useState(null); // { status, checkIn, checkOut }
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function EmpMarkAttendance() {
         if (todayRecord) setAttendanceToday(todayRecord);
       })
       .catch((err) => console.error("Fetch error:", err.response?.data || err.message));
-  }, [employeeId]);
+  }, [employeeId, todayStr]);
 
   // ===== Handle Check In =====
   const handleCheckIn = async () => {
@@ -91,7 +93,7 @@ export default function EmpMarkAttendance() {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-md mx-auto mt-16 p-8 rounded-3xl shadow-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white"
+      className="mx-auto mt-6 max-w-md rounded-3xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-4 text-white shadow-2xl sm:mt-10 sm:p-6 md:mt-16 md:p-8"
     >
       <h2 className="text-3xl font-bold text-center mb-6">Employee Attendance</h2>
       <p className="text-center mb-6">Date: <b>{todayStr}</b></p>

@@ -108,10 +108,10 @@ export default function Login({ setRole, setEmployeeId }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
-      <div className="backdrop-blur-lg bg-white/20 border border-white/30 shadow-2xl rounded-2xl p-8 w-[400px] text-white">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-3 sm:p-6">
+      <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/20 p-5 text-white shadow-2xl backdrop-blur-lg sm:p-8">
 
-        <h2 className="text-3xl font-bold text-center mb-6">
+        <h2 className="mb-6 text-center text-2xl font-bold sm:text-3xl">
         Biswas group Attendance
         </h2>
 

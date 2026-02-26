@@ -9,11 +9,15 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import adminRoutes from "./routes/adminManagement.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, "../.env") });
+// Support both repo-root .env and server/.env to avoid local misconfiguration.
+const envCandidates = [path.join(__dirname, "../.env"), path.join(__dirname, ".env")];
+const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
+dotenv.config(envPath ? { path: envPath } : undefined);
 
 const app = express();
 
@@ -27,9 +31,21 @@ if (!cached) {
 }
 
 const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is not configured");
+  }
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGO_URI).then((m) => m);
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+      })
+      .then((m) => m)
+      .catch((err) => {
+        cached.promise = null;
+        throw err;
+      });
   }
   cached.conn = await cached.promise;
   return cached.conn;
@@ -42,7 +58,13 @@ app.use(async (req, res, next) => {
     next();
   } catch (err) {
     console.error("MongoDB connection error:", err);
-    res.status(500).json({ error: "Database connection failed" });
+    res.status(500).json({
+      error: "Database connection failed",
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Unable to connect to database"
+          : err.message,
+    });
   }
 });
 
@@ -50,7 +72,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Only listen when running locally (not on Vercel serverless)
 if (process.env.VERCEL !== "1") {

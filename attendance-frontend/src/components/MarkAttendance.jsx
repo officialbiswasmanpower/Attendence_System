@@ -117,27 +117,27 @@ const handleSubmit = async () => {
 
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl p-3 sm:p-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-800">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-extrabold text-gray-800 sm:text-3xl md:text-4xl">
           <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
             Mark Attendance
           </span>
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
           <label className="font-medium text-gray-600 hidden sm:block">Select Date:</label>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none transition"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:w-auto"
           />
         </div>
       </div>
 
       {/* Employee List */}
-      <div className="bg-white shadow-xl rounded-3xl p-6">
+      <div className="rounded-3xl bg-white p-3 shadow-xl sm:p-6">
         <div className="max-h-[410px] overflow-y-auto space-y-2">
           {employees.map(emp => (
             <div
@@ -153,7 +153,7 @@ const handleSubmit = async () => {
                 <select
                   value={records[emp._id]?.status}
                   onChange={e => handleStatusChange(emp._id, e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:w-auto"
                 >
                   <option value="">Select Status</option>
                   <option value="Present">Present ✅</option>
@@ -166,13 +166,13 @@ const handleSubmit = async () => {
                       type="time"
                       value={records[emp._id]?.checkIn}
                       onChange={e => handleTimeChange(emp._id, "checkIn", e.target.value)}
-                      className="px-2 py-2 border border-gray-300 rounded-lg"
+                      className="w-full rounded-lg border border-gray-300 px-2 py-2 sm:w-auto"
                     />
                     <input
                       type="time"
                       value={records[emp._id]?.checkOut}
                       onChange={e => handleTimeChange(emp._id, "checkOut", e.target.value)}
-                      className="px-2 py-2 border border-gray-300 rounded-lg"
+                      className="w-full rounded-lg border border-gray-300 px-2 py-2 sm:w-auto"
                     />
                   </>
                 )}

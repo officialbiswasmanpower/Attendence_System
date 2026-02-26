@@ -1,15 +1,10 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
-export default function EmpSidebar({ sidebarOpen, setSidebarOpen }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+void motion;
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-    window.location.reload();
-  };
+export default function EmpSidebar({ sidebarOpen, setSidebarOpen }) {
+  const location = useLocation();
 
   const navItems = [
     { to: "/mark-attendance", label: "Mark Attendance", icon: "fas fa-calendar-check" },

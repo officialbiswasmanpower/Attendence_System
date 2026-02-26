@@ -72,8 +72,8 @@ export default function CreateAdmin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8">
+    <div className="flex min-h-dvh items-center justify-center bg-gray-100 p-3 sm:p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-8">
 
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Create Admin/Subadmin
@@ -134,7 +134,7 @@ export default function CreateAdmin() {
                 Assign Pages
               </h3>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {allPages.map((page) => (
                   <label
                     key={page.value}

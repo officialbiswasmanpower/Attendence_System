@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+void motion;
+
 function Topbar({ setSidebarOpen, profileImage }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -18,28 +20,28 @@ function Topbar({ setSidebarOpen, profileImage }) {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="flex items-center justify-between px-6 py-4 bg-white shadow-md sticky top-0 z-50 border-b"
+      className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b bg-white px-3 py-3 shadow-md sm:px-4 md:px-6 md:py-4"
     >
       {/* Hamburger */}
       <div
-        className="lg:hidden cursor-pointer"
+        className="cursor-pointer lg:hidden shrink-0"
         onClick={() => setSidebarOpen(true)}
       >
         <Bars3Icon className="h-7 w-7 text-indigo-500" />
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-gray-800 flex-1 text-center">
+      <h1 className="flex-1 truncate px-2 text-center text-base font-bold text-gray-800 sm:text-lg md:text-2xl">
         Employee Management System
       </h1>
 
       {/* Profile + Dropdown */}
-      <div className="relative">
+      <div className="relative shrink-0">
         <img
           src={profileImage || "/image.png"}
           alt="Profile"
           onClick={() => setOpen(!open)}
-          className="h-10 w-10 rounded-full cursor-pointer border-2"
+          className="h-9 w-9 cursor-pointer rounded-full border-2 sm:h-10 sm:w-10"
         />
 
         {open && (

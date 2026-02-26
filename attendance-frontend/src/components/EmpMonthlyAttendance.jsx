@@ -10,6 +10,7 @@ export default function EmpMonthlyAttendance({ employeeId }) {
   const [month, setMonth] = useState(getCurrentMonth());
   const [attendance, setAttendance] = useState([]);
   const [employee, setEmployee] = useState(null);
+  const [activeDay, setActiveDay] = useState(null);
 
   useEffect(() => {
     const fetchEmployee = async () => {
@@ -47,10 +48,9 @@ export default function EmpMonthlyAttendance({ employeeId }) {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-3xl shadow-2xl animate-[fadeIn_0.6s_ease-out]">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
+    <div className="rounded-3xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-3 shadow-2xl animate-[fadeIn_0.6s_ease-out] sm:p-4 md:p-6">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <h2 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-2xl font-extrabold text-transparent md:text-3xl">
           My Monthly Attendance
         </h2>
 
@@ -58,45 +58,65 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="border border-gray-300 p-2 rounded-lg shadow-sm hover:shadow-md transition"
+          className="w-full rounded-lg border border-gray-300 p-2 shadow-sm transition hover:shadow-md sm:w-auto"
         />
       </div>
 
-      {/* Attendance Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-7">
         {[...Array(totalDaysInMonth)].map((_, i) => {
           const day = i + 1;
           const dateObj = new Date(year, monthIndex - 1, day);
           const dayName = getDayName(day);
-          const record = attendance.find(a => new Date(a.date).getDate() === day);
+          const record = attendance.find((a) => new Date(a.date).getDate() === day);
           const status = record ? record.status : "-";
-
           const isSunday = dateObj.getDay() === 0;
+          const hasTimeInfo =
+            record && record.status === "Present" && (record.checkIn || record.checkOut);
 
           const bgClass =
-            status === "Present" ? "bg-green-100 text-green-800" :
-            status === "Absent" ? "bg-red-100 text-red-800" :
-            "bg-gray-100 text-gray-600";
+            status === "Present"
+              ? "bg-green-100 text-green-800"
+              : status === "Absent"
+              ? "bg-red-100 text-red-800"
+              : "bg-gray-100 text-gray-600";
 
           return (
             <div
               key={day}
-              className={`group relative flex flex-col items-center justify-center p-3 rounded-xl shadow-md transition-transform hover:scale-105 cursor-default
-                ${isSunday ? "bg-red-200 text-red-800 font-bold" : bgClass}`}
+              className={`group relative flex flex-col items-center justify-center rounded-xl p-3 text-center shadow-md transition-transform hover:scale-105 ${
+                isSunday ? "bg-red-200 font-bold text-red-800" : bgClass
+              }`}
             >
               <span className="text-sm text-gray-500">{dayName}</span>
               <span className="text-lg font-semibold">{day}</span>
               <span className="mt-1 text-sm">{status}</span>
 
-              {/* Tooltip on hover */}
-              {record && record.status === "Present" && (record.checkIn || record.checkOut) && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center z-20">
-                  <div className="bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                    {record.checkIn && <div>🟢 In: {record.checkIn}</div>}
-                    {record.checkOut && <div>🔴 Out: {record.checkOut}</div>}
-                    {!record.checkOut && <div className="text-yellow-300">⏳ Not checked out</div>}
+              {hasTimeInfo && (
+                <button
+                  type="button"
+                  onClick={() => setActiveDay(activeDay === day ? null : day)}
+                  className="mt-2 rounded-md bg-black/10 px-2 py-1 text-xs font-semibold text-gray-700 md:hidden"
+                >
+                  {activeDay === day ? "Hide Time" : "View Time"}
+                </button>
+              )}
+
+              {hasTimeInfo && (
+                <div className="absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 flex-col items-center md:group-hover:flex">
+                  <div className="whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg">
+                    {record.checkIn && <div>In: {record.checkIn}</div>}
+                    {record.checkOut && <div>Out: {record.checkOut}</div>}
+                    {!record.checkOut && <div className="text-yellow-300">Not checked out</div>}
                   </div>
-                  <div className="w-2 h-2 bg-gray-800 rotate-45 -mt-1"></div>
+                  <div className="-mt-1 h-2 w-2 rotate-45 bg-gray-800"></div>
+                </div>
+              )}
+
+              {hasTimeInfo && activeDay === day && (
+                <div className="mt-2 w-full rounded-lg bg-gray-800 px-2 py-2 text-xs text-white md:hidden">
+                  {record.checkIn && <div>In: {record.checkIn}</div>}
+                  {record.checkOut && <div>Out: {record.checkOut}</div>}
+                  {!record.checkOut && <div className="text-yellow-300">Not checked out</div>}
                 </div>
               )}
             </div>

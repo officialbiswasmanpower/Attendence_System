@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import API from "../api";
 import { motion, AnimatePresence } from "framer-motion";
 
+void motion;
+
 export default function EmpTopbar({ setSidebarOpen, profileImage }) {
   const navigate = useNavigate();
   const [employee, setEmployee] = useState(null);
@@ -36,17 +38,13 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
     fetchEmployee();
   }, [employeeId]);
 
-  useEffect(() => {
-    if (profileImage && employee) {
-      setEmployee(prev => ({ ...prev, profileImage }));
-    }
-  }, [profileImage]);
-
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
     window.location.reload();
   };
+
+  const displayProfileImage = profileImage || employee?.profileImage;
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword)
@@ -89,7 +87,7 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="flex items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-6 h-16 shadow-xl"
+        className="flex h-14 items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 shadow-xl sm:h-16 sm:px-4 md:px-6"
       >
         <button
           className="text-white md:hidden p-2 rounded-md hover:bg-white/20"
@@ -107,10 +105,10 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
           </span>
         </div>
 
-        <div className="relative flex items-center gap-4" ref={menuRef}>
-          {employee && employee.profileImage ? (
+        <div className="relative flex items-center gap-3 sm:gap-4" ref={menuRef}>
+          {employee && displayProfileImage ? (
             <motion.img
-              src={employee.profileImage}
+              src={displayProfileImage}
               alt="Profile"
               className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md cursor-pointer"
               whileHover={{ scale: 1.1 }}
@@ -133,7 +131,7 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.2 }}
-      className="absolute right-0 top-full mt-3 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden"
+      className="absolute right-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl sm:w-64"
     >
       <div className="py-2">
 
@@ -176,7 +174,7 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
-              className="bg-white rounded-2xl p-6 w-[380px] shadow-2xl"
+              className="w-[92vw] max-w-sm rounded-2xl bg-white p-4 shadow-2xl sm:p-6"
             >
               <h2 className="text-xl font-bold mb-4 text-gray-800">
                 Change Password
@@ -218,16 +216,16 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
                 className="w-full mb-4 p-2 border rounded-lg"
               />
 
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                  className="w-full rounded-lg bg-gray-200 px-4 py-2 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleChangePassword}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                  className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-white sm:w-auto"
                 >
                   Update
                 </button>

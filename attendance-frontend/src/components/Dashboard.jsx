@@ -58,10 +58,10 @@ const getLocalToday = () => {
   const absentCount = attendance.filter(item => item.status === "Absent").length;
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+        <h1 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
           Admin Dashboard
         </h1>
 
@@ -70,7 +70,7 @@ const getLocalToday = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:w-auto"
           />
         </div>
       </div>
@@ -94,7 +94,7 @@ const getLocalToday = () => {
       </div>
 
       {/* Employee Table */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
         <div className="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100">
           <h2 className="text-xl font-semibold text-gray-700">
             Employee Attendance
@@ -102,7 +102,7 @@ const getLocalToday = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left">
+          <table className="min-w-[760px] w-full text-left">
             <thead className="bg-gray-100 text-gray-600 uppercase text-sm">
               <tr>
                 <th className="px-6 py-3">Name</th>

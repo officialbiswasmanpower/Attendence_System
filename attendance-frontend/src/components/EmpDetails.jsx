@@ -93,10 +93,10 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
   if (!employee) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200 animate-[fadeIn_0.6s_ease-out]">
+    <div className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl animate-[fadeIn_0.6s_ease-out]">
 
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 text-white text-center relative flex flex-col items-center gap-4">
+      <div className="relative flex flex-col items-center gap-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-5 text-center text-white sm:p-8">
 
         {/* Profile Image */}
         <div className="relative w-28 h-28">
@@ -125,7 +125,7 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
 
         {/* Save / Cancel Buttons appear only after selection */}
         {selectedFile && (
-          <div className="flex gap-2 mt-2">
+          <div className="mt-2 flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <button
               onClick={handleSaveImage}
               disabled={savingImage}
@@ -181,7 +181,7 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
       </div>
 
       {/* Employee Info */}
-      <div className="p-6 space-y-4">
+      <div className="space-y-4 p-4 sm:p-6">
         <div className="flex flex-col">
           <label className="text-sm text-gray-500 mb-1 font-medium flex items-center gap-2">
             <i className="fas fa-envelope w-4 h-4"></i> Email
@@ -218,18 +218,18 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
       </div>
 
       {/* Edit / Save Details Buttons */}
-      <div className="p-6 flex justify-center gap-4">
+      <div className="flex flex-col justify-center gap-3 p-4 sm:flex-row sm:gap-4 sm:p-6">
         {editingDetails ? (
           <>
             <button
               onClick={handleSaveDetails}
-              className="px-6 py-2 rounded-lg text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+              className="w-full rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 px-6 py-2 text-white sm:w-auto"
             >
               Save
             </button>
             <button
               onClick={() => { setEditingDetails(false); setForm(employee); }}
-              className="px-6 py-2 rounded-lg bg-gray-200"
+              className="w-full rounded-lg bg-gray-200 px-6 py-2 sm:w-auto"
             >
               Cancel
             </button>
@@ -237,7 +237,7 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
         ) : (
           <button
             onClick={() => setEditingDetails(true)}
-            className="px-6 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600"
+            className="w-full rounded-lg bg-yellow-500 px-6 py-2 text-white hover:bg-yellow-600 sm:w-auto"
           >
             Edit Details
           </button>
