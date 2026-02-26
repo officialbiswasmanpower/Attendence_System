@@ -14,6 +14,7 @@ export default function MonthlyAttendance() {
   const [employees, setEmployees] = useState([]);
   const [month, setMonth] = useState(getCurrentMonth());
   const [attendance, setAttendance] = useState({});
+  const [leaveByEmployee, setLeaveByEmployee] = useState({});
   const [officeOffs, setOfficeOffs] = useState([]);
   const [showOffPicker, setShowOffPicker] = useState(false);
   const [offDate, setOffDate] = useState("");
@@ -72,6 +73,27 @@ export default function MonthlyAttendance() {
     fetchAttendance();
   }, [month, employees]);
 
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      if (!month || employees.length === 0) return;
+      try {
+        const res = await API.get("/leaves");
+        const map = {};
+        res.data
+          .filter((leave) => leave.status === "Approved" && leave.leaveDate?.startsWith(month))
+          .forEach((leave) => {
+            const day = Number(leave.leaveDate.split("-")[2]);
+            if (!map[leave.employeeId]) map[leave.employeeId] = {};
+            map[leave.employeeId][day] = "L";
+          });
+        setLeaveByEmployee(map);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchLeaves();
+  }, [month, employees]);
+
   // ================= OFFICE OFF =================
   const addOfficeOff = () => {
     if (!offDate || !offReason) return;
@@ -105,12 +127,13 @@ export default function MonthlyAttendance() {
   const exportToExcel = () => {
     const data = employees.map((emp) => {
       const empAttendance = attendance[emp._id] || {};
+      const empLeaves = leaveByEmployee[emp.employeeId] || {};
       const row = { Employee: emp.name };
 
       // Attendance for each day
       for (let i = 1; i <= totalDaysInMonth; i++) {
         const isOfficeOff = officeOffDays.includes(i);
-        const status = isOfficeOff ? "OFF" : empAttendance[i] || "-";
+        const status = isOfficeOff ? "OFF" : empAttendance[i] || empLeaves[i] || "-";
         row[`Day ${i}`] = status;
       }
 
@@ -239,6 +262,7 @@ export default function MonthlyAttendance() {
           <tbody>
             {employees.map((emp, idx) => {
               const empAttendance = attendance[emp._id] || {};
+              const empLeaves = leaveByEmployee[emp.employeeId] || {};
               const present = Object.values(empAttendance).filter((s) => s === "P").length;
               const absent = Object.values(empAttendance).filter((s) => s === "A").length;
               const paidLeaves = 2;
@@ -251,7 +275,7 @@ export default function MonthlyAttendance() {
                   <td className="p-2 font-medium text-gray-700">{emp.name}</td>
                   {[...Array(totalDaysInMonth)].map((_, dayIndex) => {
                     const day = dayIndex + 1;
-                    const cell = empAttendance[day] || "";
+                    const cell = empAttendance[day] || empLeaves[day] || "";
                     const isOfficeOff = officeOffDays.includes(day);
                     const displayText = isOfficeOff ? "OFF" : cell || "-";
 
@@ -263,6 +287,8 @@ export default function MonthlyAttendance() {
                           ? "bg-green-200 text-green-800"
                           : cell === "A"
                           ? "bg-red-200 text-red-800"
+                          : cell === "L"
+                          ? "bg-amber-200 text-amber-800"
                           : "text-gray-400"
                       }`}>
                         {displayText}

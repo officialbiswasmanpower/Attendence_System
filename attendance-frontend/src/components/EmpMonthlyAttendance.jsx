@@ -9,6 +9,7 @@ export default function EmpMonthlyAttendance({ employeeId }) {
 
   const [month, setMonth] = useState(getCurrentMonth());
   const [attendance, setAttendance] = useState([]);
+  const [approvedLeaves, setApprovedLeaves] = useState([]);
   const [employee, setEmployee] = useState(null);
   const [activeDay, setActiveDay] = useState(null);
 
@@ -35,6 +36,22 @@ export default function EmpMonthlyAttendance({ employeeId }) {
       }
     };
     fetchAttendance();
+  }, [month, employeeId]);
+
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      if (!month || !employeeId) return;
+      try {
+        const res = await API.get(`/leaves/employee/${employeeId}`);
+        const monthLeaves = res.data.filter(
+          (leave) => leave.status === "Approved" && leave.leaveDate?.startsWith(month)
+        );
+        setApprovedLeaves(monthLeaves);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchLeaves();
   }, [month, employeeId]);
 
   const [year, monthIndex] = month.split("-").map(Number);
@@ -68,7 +85,10 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           const dateObj = new Date(year, monthIndex - 1, day);
           const dayName = getDayName(day);
           const record = attendance.find((a) => new Date(a.date).getDate() === day);
-          const status = record ? record.status : "-";
+          const hasApprovedLeave = approvedLeaves.some(
+            (leave) => Number(leave.leaveDate?.split("-")[2]) === day
+          );
+          const status = record ? record.status : hasApprovedLeave ? "Leave" : "-";
           const isSunday = dateObj.getDay() === 0;
           const hasTimeInfo =
             record && record.status === "Present" && (record.checkIn || record.checkOut);
@@ -76,6 +96,8 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           const bgClass =
             status === "Present"
               ? "bg-green-100 text-green-800"
+              : status === "Leave"
+              ? "bg-amber-100 text-amber-800"
               : status === "Absent"
               ? "bg-red-100 text-red-800"
               : "bg-gray-100 text-gray-600";

@@ -17,7 +17,6 @@ import EmpSidebar from "./components/EmpSidebar";
 import EmpMarkAttendance from "./components/EmpMarkAttendance";
 import EmpMonthlyAttendance from "./components/EmpMonthlyAttendance";
 import EmpDetails from "./components/EmpDetails";
-import EmpSalary from "./components/EmpSalary";
 
 // Auth
 import Login from "./components/Login";
@@ -147,11 +146,6 @@ function App() {
         />
       }
     />
-    <Route
-      path="my-salary"
-      element={<EmpSalary employeeId={employeeId} />}
-    />
-
     <Route path="*" element={<Navigate to="mark-attendance" replace />} />
   </Route>
 )}

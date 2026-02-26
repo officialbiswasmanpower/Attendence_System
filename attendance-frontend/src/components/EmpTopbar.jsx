@@ -89,9 +89,7 @@ export default function EmpTopbar({ profileImage }) {
         transition={{ duration: 0.6 }}
         className="flex h-14 items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 shadow-xl sm:h-16 sm:px-4 md:px-6"
       >
-        <div className="h-9 w-9 shrink-0 md:hidden"></div>
-
-        <div className="flex min-w-0 flex-1 flex-col text-center text-white font-semibold md:flex-none md:text-left">
+        <div className="flex min-w-0 flex-1 flex-col text-left text-white font-semibold">
           <span className="truncate text-sm sm:text-base md:text-lg">
             {employee ? employee.name : "Employee"}
           </span>

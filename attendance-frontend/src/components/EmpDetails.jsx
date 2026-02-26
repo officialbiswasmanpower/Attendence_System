@@ -16,6 +16,10 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
   const [employee, setEmployee] = useState(null);
   const [form, setForm] = useState({});
   const [editingDetails, setEditingDetails] = useState(false);
+  const [salaryInfo, setSalaryInfo] = useState(null);
+  const [salaryMonth, setSalaryMonth] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }).slice(0, 7)
+  );
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -44,6 +48,43 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
     };
     fetchEmployee();
   }, [employeeId]);
+
+  useEffect(() => {
+    const fetchSalary = async () => {
+      if (!employeeId || !salaryMonth) return;
+      try {
+        const attendanceRes = await API.get(`/attendance/employee/${employeeId}?month=${salaryMonth}`);
+        const attendance = attendanceRes.data;
+        const leavesRes = await API.get(`/leaves/employee/${employeeId}`);
+        const approvedLeaves = leavesRes.data.filter(
+          (leave) => leave.status === "Approved" && leave.leaveDate?.startsWith(salaryMonth)
+        ).length;
+
+        const present = attendance.filter((a) => a.status === "Present").length;
+        const absent = attendance.filter((a) => a.status === "Absent").length;
+        const paidLeaves = 2;
+        const unpaidLeaves = Math.max(0, absent - paidLeaves);
+
+        const empRes = await API.get(`/employees/${employeeId}`);
+        const totalSalary = Number(empRes.data.salary || 0);
+        const salaryPerDay =
+          totalSalary / new Date(salaryMonth.split("-")[0], salaryMonth.split("-")[1], 0).getDate();
+        const finalSalary = (totalSalary - salaryPerDay * unpaidLeaves).toFixed(2);
+
+        setSalaryInfo({
+          present,
+          absent,
+          approvedLeaves,
+          unpaidLeaves,
+          finalSalary,
+          totalSalary,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchSalary();
+  }, [employeeId, salaryMonth]);
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -311,6 +352,49 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
               />
             ) : (
               <span className="font-medium text-gray-700">{employee.phone}</span>
+            )}
+          </div>
+
+          <div className="mt-2 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 shadow-sm">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-lg font-bold text-indigo-900">Salary Card</h3>
+              <input
+                type="month"
+                value={salaryMonth}
+                onChange={(e) => setSalaryMonth(e.target.value)}
+                className="w-full rounded-md border border-indigo-200 bg-white p-2 text-sm text-gray-700 sm:w-auto"
+              />
+            </div>
+
+            {!salaryInfo ? (
+              <p className="text-sm text-gray-500">Loading salary...</p>
+            ) : (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Total Salary</span>
+                  <span className="font-semibold text-gray-900">Rs {salaryInfo.totalSalary}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Present Days</span>
+                  <span className="font-semibold text-emerald-700">{salaryInfo.present}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Absent Days</span>
+                  <span className="font-semibold text-red-700">{salaryInfo.absent}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Approved Leave</span>
+                  <span className="font-semibold text-amber-700">{salaryInfo.approvedLeaves}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Unpaid Leaves</span>
+                  <span className="font-semibold text-orange-700">{salaryInfo.unpaidLeaves}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-emerald-50 p-2">
+                  <span className="font-semibold text-emerald-900">Salary This Month</span>
+                  <span className="font-bold text-emerald-700">Rs {salaryInfo.finalSalary}</span>
+                </div>
+              </div>
             )}
           </div>
         </div>

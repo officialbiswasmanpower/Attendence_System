@@ -7,7 +7,6 @@ export default function EmpSidebar() {
     { to: "/mark-attendance", label: "Mark", icon: "fas fa-calendar-check" },
     { to: "/my-attendance", label: "Attendance", icon: "fas fa-calendar-alt" },
     { to: "/my-details", label: "Profile", icon: "fas fa-user" },
-    { to: "/my-salary", label: "Salary", icon: "fas fa-money-bill-wave" },
   ];
 
   // Mobile order requested:
@@ -15,7 +14,6 @@ export default function EmpSidebar() {
   const mobileNavItems = [
     { to: "/my-attendance", label: "Attendance", icon: "fas fa-calendar-alt" },
     { to: "/mark-attendance", label: "Mark", icon: "fas fa-calendar-check" },
-    { to: "/my-salary", label: "Salary", icon: "fas fa-money-bill-wave" },
     { to: "/my-details", label: "Profile", icon: "fas fa-user" },
   ];
 
@@ -43,7 +41,7 @@ export default function EmpSidebar() {
       </aside>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-indigo-200/70 bg-gradient-to-r from-indigo-100/95 via-fuchsia-100/95 to-pink-100/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-1 shadow-[0_-8px_20px_rgba(79,70,229,0.18)] backdrop-blur md:hidden">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-3 gap-1">
           {mobileNavItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
