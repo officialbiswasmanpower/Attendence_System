@@ -43,7 +43,7 @@ export default function Login({ setRole, setEmployeeId }) {
       setRole(empRole);
       setEmployeeId(res.data.employee.employeeId);
 
-      navigate("/");
+      navigate("/mark-attendance");
     } catch (err) {
       showMessage("error", err.response?.data?.message || "Login failed");
     } finally {

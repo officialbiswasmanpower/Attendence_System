@@ -41,15 +41,13 @@ export default function EmpMonthlyAttendance({ employeeId }) {
 
   if (!employee) return <div>Loading...</div>;
 
-  // Helper to get day name
   const getDayName = (day) => {
     const date = new Date(year, monthIndex - 1, day);
-    return date.toLocaleDateString("en-US", { weekday: "short" }); // Mon, Tue, ...
+    return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
   return (
     <div className="p-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-3xl shadow-2xl animate-[fadeIn_0.6s_ease-out]">
-
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h2 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">
@@ -73,7 +71,7 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           const record = attendance.find(a => new Date(a.date).getDate() === day);
           const status = record ? record.status : "-";
 
-          const isSunday = dateObj.getDay() === 0; // Sunday = 0
+          const isSunday = dateObj.getDay() === 0;
 
           const bgClass =
             status === "Present" ? "bg-green-100 text-green-800" :
@@ -83,12 +81,24 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           return (
             <div
               key={day}
-              className={`flex flex-col items-center justify-center p-3 rounded-xl shadow-md transition-transform hover:scale-105
+              className={`group relative flex flex-col items-center justify-center p-3 rounded-xl shadow-md transition-transform hover:scale-105 cursor-default
                 ${isSunday ? "bg-red-200 text-red-800 font-bold" : bgClass}`}
             >
               <span className="text-sm text-gray-500">{dayName}</span>
               <span className="text-lg font-semibold">{day}</span>
               <span className="mt-1 text-sm">{status}</span>
+
+              {/* Tooltip on hover */}
+              {record && record.status === "Present" && (record.checkIn || record.checkOut) && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center z-20">
+                  <div className="bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                    {record.checkIn && <div>🟢 In: {record.checkIn}</div>}
+                    {record.checkOut && <div>🔴 Out: {record.checkOut}</div>}
+                    {!record.checkOut && <div className="text-yellow-300">⏳ Not checked out</div>}
+                  </div>
+                  <div className="w-2 h-2 bg-gray-800 rotate-45 -mt-1"></div>
+                </div>
+              )}
             </div>
           );
         })}
