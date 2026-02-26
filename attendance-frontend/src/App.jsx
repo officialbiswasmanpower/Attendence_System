@@ -10,6 +10,7 @@ import Topbar from "./components/Topbar";
 import MonthlyAttendance from "./components/MonthlyAttendance";
 import CreateAdmin from "./components/CreateAdmin";
 import ChangeEmployeePassword from "./components/ChangeEmployeePassword";
+import AdminLeaveApplications from "./components/AdminLeaveApplications";
 
 // Employee components
 import EmpSidebar from "./components/EmpSidebar";
@@ -21,6 +22,13 @@ import EmpSalary from "./components/EmpSalary";
 // Auth
 import Login from "./components/Login";
 import EmpTopbar from "./components/EmpTopbar";
+
+const VALID_ROLES = ["employee", "admin", "superadmin", "subadmin"];
+
+const getLandingPath = (role) => {
+  if (role === "employee" || role === "subadmin") return "/mark-attendance";
+  return "/";
+};
 
 function AdminLayout({ sidebarOpen, setSidebarOpen }) {
   return (
@@ -36,13 +44,13 @@ function AdminLayout({ sidebarOpen, setSidebarOpen }) {
   );
 }
 
-function EmployeeLayout({ sidebarOpen, setSidebarOpen }) {
+function EmployeeLayout({ profileImage }) {
   return (
     <div className="flex min-h-dvh bg-slate-50">
-      <EmpSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <EmpSidebar />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <EmpTopbar setSidebarOpen={setSidebarOpen} profileImage="/image.png" />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        <EmpTopbar profileImage={profileImage} />
+        <main className="flex-1 overflow-y-auto p-3 pb-24 sm:p-4 sm:pb-24 md:p-6 md:pb-6">
           <Outlet />
         </main>
       </div>
@@ -52,13 +60,22 @@ function EmployeeLayout({ sidebarOpen, setSidebarOpen }) {
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [role, setRole] = useState(localStorage.getItem("role"));
+  const [role, setRole] = useState(() => {
+    const storedRole = localStorage.getItem("role");
+    return VALID_ROLES.includes(storedRole) ? storedRole : null;
+  });
   const [employeeId, setEmployeeId] = useState(localStorage.getItem("employeeId"));
+  const [employeeProfile, setEmployeeProfile] = useState({ employeeId: "", imageUrl: "" });
+  const token = localStorage.getItem("token");
+  const isAuthenticated = Boolean(token && role && VALID_ROLES.includes(role));
+  const landingPath = getLandingPath(role);
 
   return (
     <BrowserRouter>
-      {role ? (
+      {isAuthenticated ? (
         <Routes>
+          <Route path="/login" element={<Navigate to={landingPath} replace />} />
+
           {/* Admin / Superadmin / Subadmin Routes */}
           {(role === "admin" || role === "superadmin" || role === "subadmin") && (
             <Route path="/" element={<AdminLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}>
@@ -70,6 +87,7 @@ function App() {
                   <Route path="MonthlyAttendance" element={<MonthlyAttendance />} />
                   <Route path="create-admin" element={<CreateAdmin />} />
                   <Route path="change-password" element={<ChangeEmployeePassword />} />
+                  <Route path="leave-applications" element={<AdminLeaveApplications />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}
@@ -80,11 +98,13 @@ function App() {
                   <Route path="mark-attendance" element={<MarkAttendance />} />
                   <Route path="MonthlyAttendance" element={<MonthlyAttendance />} />
                   <Route path="change-password" element={<ChangeEmployeePassword />} />
+                  <Route path="leave-applications" element={<AdminLeaveApplications />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}
               {role === "subadmin" && (
                 <>
+                  <Route index element={<Navigate to="mark-attendance" replace />} />
                   <Route path="mark-attendance" element={<MarkAttendance />} />
                   <Route path="*" element={<Navigate to="mark-attendance" />} />
                 </>
@@ -94,7 +114,16 @@ function App() {
 
           {/* Employee Routes */}
 {role === "employee" && (
-  <Route path="/" element={<EmployeeLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}>
+  <Route
+    path="/"
+    element={
+      <EmployeeLayout
+        profileImage={
+          employeeProfile.employeeId === employeeId ? employeeProfile.imageUrl : ""
+        }
+      />
+    }
+  >
 
     {/* ✅ Default page */}
     <Route index element={<Navigate to="mark-attendance" replace />} />
@@ -109,7 +138,14 @@ function App() {
     />
     <Route
       path="my-details"
-      element={<EmpDetails employeeId={employeeId} />}
+      element={
+        <EmpDetails
+          employeeId={employeeId}
+          onProfileUpdate={(imageUrl) =>
+            setEmployeeProfile({ employeeId: employeeId || "", imageUrl })
+          }
+        />
+      }
     />
     <Route
       path="my-salary"
@@ -119,12 +155,14 @@ function App() {
     <Route path="*" element={<Navigate to="mark-attendance" replace />} />
   </Route>
 )}
+          <Route path="*" element={<Navigate to={landingPath} replace />} />
 
         </Routes>
       ) : (
         // Login Page
         <Routes>
-          <Route path="*" element={<Login setRole={setRole} setEmployeeId={setEmployeeId} />} />
+          <Route path="/login" element={<Login setRole={setRole} setEmployeeId={setEmployeeId} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       )}
     </BrowserRouter>

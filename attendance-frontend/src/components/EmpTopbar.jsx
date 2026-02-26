@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 void motion;
 
-export default function EmpTopbar({ setSidebarOpen, profileImage }) {
+export default function EmpTopbar({ profileImage }) {
   const navigate = useNavigate();
   const [employee, setEmployee] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -89,18 +89,13 @@ export default function EmpTopbar({ setSidebarOpen, profileImage }) {
         transition={{ duration: 0.6 }}
         className="flex h-14 items-center justify-between bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-3 shadow-xl sm:h-16 sm:px-4 md:px-6"
       >
-        <button
-          className="text-white md:hidden p-2 rounded-md hover:bg-white/20"
-          onClick={() => setSidebarOpen(true)}
-        >
-          <i className="fas fa-bars text-xl"></i>
-        </button>
+        <div className="h-9 w-9 shrink-0 md:hidden"></div>
 
-        <div className="hidden md:flex flex-col text-white font-semibold">
-          <span className="text-lg">
+        <div className="flex min-w-0 flex-1 flex-col text-center text-white font-semibold md:flex-none md:text-left">
+          <span className="truncate text-sm sm:text-base md:text-lg">
             {employee ? employee.name : "Employee"}
           </span>
-          <span className="text-sm text-indigo-200">
+          <span className="truncate text-xs text-indigo-200 md:text-sm">
             {employee ? employee.position : ""}
           </span>
         </div>

@@ -1,82 +1,68 @@
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
 
-void motion;
-
-export default function EmpSidebar({ sidebarOpen, setSidebarOpen }) {
+export default function EmpSidebar() {
   const location = useLocation();
 
-  const navItems = [
-    { to: "/mark-attendance", label: "Mark Attendance", icon: "fas fa-calendar-check" },
-    { to: "/my-attendance", label: "My Attendance", icon: "fas fa-calendar-alt" },
-    { to: "/my-details", label: "My Details", icon: "fas fa-user" },
-    { to: "/my-salary", label: "My Salary", icon: "fas fa-money-bill-wave" },
+  const desktopNavItems = [
+    { to: "/mark-attendance", label: "Mark", icon: "fas fa-calendar-check" },
+    { to: "/my-attendance", label: "Attendance", icon: "fas fa-calendar-alt" },
+    { to: "/my-details", label: "Profile", icon: "fas fa-user" },
+    { to: "/my-salary", label: "Salary", icon: "fas fa-money-bill-wave" },
+  ];
+
+  // Mobile order requested:
+  // middle-left: Attendance, middle: Mark, middle-right: Salary, right: Profile
+  const mobileNavItems = [
+    { to: "/my-attendance", label: "Attendance", icon: "fas fa-calendar-alt" },
+    { to: "/mark-attendance", label: "Mark", icon: "fas fa-calendar-check" },
+    { to: "/my-salary", label: "Salary", icon: "fas fa-money-bill-wave" },
+    { to: "/my-details", label: "Profile", icon: "fas fa-user" },
   ];
 
   return (
     <>
-      {/* Mobile Overlay */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${
-          sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      ></div>
-
-      {/* Desktop Sidebar (always visible) */}
-      <aside className="hidden md:flex md:flex-col md:w-64 bg-gradient-to-b from-indigo-700 via-purple-600 to-pink-500 text-white shadow-2xl z-50">
-        {/* Header */}
-        <div className="flex items-center justify-center h-16 border-b border-white/25 font-bold text-2xl tracking-wide shadow-md">
+      <aside className="hidden md:flex md:h-dvh md:w-64 md:flex-col md:bg-gradient-to-b md:from-indigo-700 md:via-purple-600 md:to-pink-500 md:text-white md:shadow-2xl">
+        <div className="flex h-16 items-center justify-center border-b border-white/25 text-2xl font-bold tracking-wide shadow-md">
           Employee Portal
         </div>
 
-        {/* Navigation */}
         <nav className="mt-6 flex flex-col gap-2 px-4">
-          {navItems.map((item) => (
+          {desktopNavItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition
-                ${location.pathname === item.to ? "bg-white/25 font-semibold" : "hover:bg-white/20"}
-              `}
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 transition ${
+                location.pathname === item.to ? "bg-white/25 font-semibold" : "hover:bg-white/20"
+              }`}
             >
-              <i className={`${item.icon} w-5 h-5 text-lg`}></i>
-              {item.label}
+              <i className={`${item.icon} h-5 w-5 text-lg`}></i>
+              {item.label === "Mark" ? "Mark Attendance" : item.label}
             </Link>
           ))}
         </nav>
       </aside>
 
-      {/* Mobile Sidebar (animated) */}
-      <motion.aside
-        className="fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-indigo-700 via-purple-600 to-pink-500 text-white shadow-2xl z-50 md:hidden"
-        initial={{ x: "-100%" }}
-        animate={{ x: sidebarOpen ? 0 : "-100%" }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-center h-16 border-b border-white/25 font-bold text-2xl tracking-wide shadow-md">
-          Employee Portal
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-indigo-200/70 bg-gradient-to-r from-indigo-100/95 via-fuchsia-100/95 to-pink-100/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-1 shadow-[0_-8px_20px_rgba(79,70,229,0.18)] backdrop-blur md:hidden">
+        <div className="grid grid-cols-4 gap-1">
+          {mobileNavItems.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex min-h-14 flex-col items-center justify-center rounded-lg px-1 py-1 text-[11px] font-semibold transition ${
+                  isActive
+                    ? "bg-gradient-to-b from-indigo-600 to-fuchsia-600 text-white shadow-md"
+                    : "text-indigo-700/75 hover:bg-white/60"
+                }`}
+              >
+                <i className={`${item.icon} text-base`}></i>
+                <span className="mt-1 leading-none">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
-
-        {/* Navigation */}
-        <nav className="mt-6 flex flex-col gap-2 px-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition
-                ${location.pathname === item.to ? "bg-white/25 font-semibold" : "hover:bg-white/20"}
-              `}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <i className={`${item.icon} w-5 h-5 text-lg`}></i>
-              {item.label}
-            </Link>
-          ))}
-
-        </nav>
-      </motion.aside>
+      </nav>
     </>
   );
 }

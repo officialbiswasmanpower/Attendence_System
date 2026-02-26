@@ -9,6 +9,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
      { path: "/mark-attendance", name: "Mark Attendance" },
     { path: "/employees", name: "Add Employees" },
     { path: "/MonthlyAttendance", name: "Monthly Attendance" },
+    { path: "/leave-applications", name: "Leave Applications" },
     { path: "/change-password", name: "Change Password" },
     { path: "/create-admin", name: "Create Admin" }
 
@@ -25,7 +26,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
       )}
 
       <div
-        className={`fixed lg:static z-50 w-64 h-full bg-gradient-to-b from-indigo-600 via-purple-600 to-pink-500 text-white transform transition-transform duration-300 ease-in-out
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-indigo-600 via-purple-600 to-pink-500 text-white transform transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:h-dvh
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
         <div className="flex justify-between items-center p-5 border-b border-white/30">
@@ -36,7 +37,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           />
         </div>
 
-<nav className="p-4 space-y-3">
+<nav className="max-h-[calc(100dvh-88px)] overflow-y-auto p-4 space-y-3 lg:max-h-[calc(100dvh-88px)]">
   {menu.map((item) => (
     <Link
       key={item.path}
