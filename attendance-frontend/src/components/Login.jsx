@@ -12,6 +12,7 @@ export default function Login({ setRole, setEmployeeId }) {
   const [password, setPassword] = useState("");
   const [adminUsername, setAdminUsername] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -163,13 +164,18 @@ export default function Login({ setRole, setEmployeeId }) {
           className="w-full p-3 rounded-lg bg-white/30 mb-3"
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 rounded-lg bg-white/30 mb-4"
-        />
+        <div className="relative mb-4">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 pr-10 rounded-lg bg-white/30"
+          />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white">
+            <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+          </button>
+        </div>
 
         <button
           onClick={handleEmployeeLogin}
@@ -201,13 +207,18 @@ export default function Login({ setRole, setEmployeeId }) {
           className="w-full p-3 rounded-lg bg-white/30 mb-3"
         />
 
-        <input
-          type="password"
-          placeholder="Create Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 rounded-lg bg-white/30 mb-4"
-        />
+        <div className="relative mb-4">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Create Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 pr-10 rounded-lg bg-white/30"
+          />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white">
+            <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+          </button>
+        </div>
 
         <button
           onClick={handleSignup}
@@ -243,13 +254,18 @@ export default function Login({ setRole, setEmployeeId }) {
               onChange={(e) => setAdminUsername(e.target.value)}
               className="w-full p-3 rounded-lg bg-white/30 mb-3"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-white/30 mb-4"
-            />
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 pr-10 rounded-lg bg-white/30"
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white">
+                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+              </button>
+            </div>
             <button
               onClick={handleAdminLogin}
               className="w-full py-3 rounded-lg bg-white text-purple-600 font-bold"

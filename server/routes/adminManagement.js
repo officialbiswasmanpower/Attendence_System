@@ -32,6 +32,39 @@ router.post("/create", verifyToken, allowSuperAdmin, async (req, res) => {
   }
 });
 
+// Change Own Password (Superadmin)
+router.post("/change-own-password", verifyToken, allowSuperAdmin, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "Old and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const admin = await Admin.findById(req.user.id);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+    }
+
+    admin.password = await bcrypt.hash(newPassword, 10);
+    await admin.save();
+
+    res.json({ message: "Your password has been updated successfully" });
+  } catch (err) {
+    console.error("Change own password error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Change Employee Password (Admin/Superadmin)
 router.post("/change-employee-password", verifyToken, allowAdminAccess, async (req, res) => {
   try {
