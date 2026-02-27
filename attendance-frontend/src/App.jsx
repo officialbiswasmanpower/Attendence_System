@@ -35,7 +35,7 @@ function AdminLayout({ sidebarOpen, setSidebarOpen }) {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-3 pb-20 sm:p-4 sm:pb-20 md:p-6 lg:pb-6">
           <Outlet />
         </main>
       </div>
