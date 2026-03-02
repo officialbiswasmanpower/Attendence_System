@@ -23,16 +23,26 @@ export default function EmpMarkAttendance() {
 
   const employeeId = localStorage.getItem("employeeId");
   const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  const isTodayApprovedLeave = leaveApplications.some(
+    (item) => item.status === "Approved" && item.leaveDate === todayStr
+  );
 
   const fetchLeaveApplications = useCallback(async () => {
     if (!employeeId) return;
     try {
       const res = await API.get(`/leaves/employee/${employeeId}`);
       setLeaveApplications(res.data);
+      return res.data;
     } catch (err) {
       console.log(err);
+      return [];
     }
   }, [employeeId]);
+
+  const checkTodayApprovedLeaveLive = useCallback(async () => {
+    const latestLeaves = await fetchLeaveApplications();
+    return latestLeaves.some((item) => item.status === "Approved" && item.leaveDate === todayStr);
+  }, [fetchLeaveApplications, todayStr]);
 
   useEffect(() => {
     if (!employeeId) return;
@@ -52,6 +62,11 @@ export default function EmpMarkAttendance() {
 
   const handleCheckIn = async () => {
     if (attendanceToday?.checkIn) return;
+    const approvedToday = await checkTodayApprovedLeaveLive();
+    if (approvedToday || isTodayApprovedLeave) {
+      setMessage("Approved leave for today. Check-in is disabled.");
+      return;
+    }
     setLoading(true);
     setMessage("");
 
@@ -82,7 +97,7 @@ export default function EmpMarkAttendance() {
       setMessage("Checked In");
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setMessage("Error checking in");
+      setMessage(err.response?.data?.error || "Error checking in");
     } finally {
       setLoading(false);
     }
@@ -90,6 +105,11 @@ export default function EmpMarkAttendance() {
 
   const handleCheckOut = async () => {
     if (!attendanceToday || attendanceToday.checkOut) return;
+    const approvedToday = await checkTodayApprovedLeaveLive();
+    if (approvedToday || isTodayApprovedLeave) {
+      setMessage("Approved leave for today. Check-out is disabled.");
+      return;
+    }
     setLoading(true);
     setMessage("");
 
@@ -116,7 +136,7 @@ export default function EmpMarkAttendance() {
       setMessage("Checked Out");
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setMessage("Error checking out");
+      setMessage(err.response?.data?.error || "Error checking out");
     } finally {
       setLoading(false);
     }
@@ -161,9 +181,11 @@ export default function EmpMarkAttendance() {
         <div className="flex flex-col gap-3">
           <button
             onClick={handleCheckIn}
-            disabled={loading || Boolean(attendanceToday?.checkIn)}
+            disabled={loading || Boolean(attendanceToday?.checkIn) || isTodayApprovedLeave}
             className={`rounded-xl py-3 font-bold transition ${
-              attendanceToday?.checkIn ? "cursor-not-allowed bg-green-600" : "bg-green-400 hover:bg-green-500"
+              attendanceToday?.checkIn || isTodayApprovedLeave
+                ? "cursor-not-allowed bg-green-600"
+                : "bg-green-400 hover:bg-green-500"
             }`}
           >
             {attendanceToday?.checkIn ? `Checked In at ${attendanceToday.checkIn}` : "Check In"}
@@ -171,14 +193,24 @@ export default function EmpMarkAttendance() {
 
           <button
             onClick={handleCheckOut}
-            disabled={loading || !attendanceToday?.checkIn || Boolean(attendanceToday?.checkOut)}
+            disabled={
+              loading || !attendanceToday?.checkIn || Boolean(attendanceToday?.checkOut) || isTodayApprovedLeave
+            }
             className={`rounded-xl py-3 font-bold transition ${
-              attendanceToday?.checkOut ? "cursor-not-allowed bg-red-600" : "bg-red-400 hover:bg-red-500"
+              attendanceToday?.checkOut || isTodayApprovedLeave
+                ? "cursor-not-allowed bg-red-600"
+                : "bg-red-400 hover:bg-red-500"
             }`}
           >
             {attendanceToday?.checkOut ? `Checked Out at ${attendanceToday.checkOut}` : "Check Out"}
           </button>
         </div>
+
+        {isTodayApprovedLeave && (
+          <p className="mt-4 text-center text-sm font-semibold">
+            Today is approved leave. Attendance marking is disabled.
+          </p>
+        )}
 
         {message && <p className="mt-4 text-center text-sm font-semibold">{message}</p>}
       </motion.div>

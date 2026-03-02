@@ -1,6 +1,7 @@
 import express from "express";
 import Attendance from "../models/Attendance.js";
 import Employee from "../models/Employee.js";
+import LeaveApplication from "../models/LeaveApplication.js";
 
 const router = express.Router();
 
@@ -14,13 +15,25 @@ router.post("/", async (req, res) => {
     }
 
     const [year, month, day] = date.split("-");
-    const finalDate = new Date(Date.UTC(year, month - 1, day)); // ✅ FIXED
+    const finalDate = new Date(Date.UTC(year, month - 1, day));
+    const normalizedDate = `${String(year)}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const blockedEmployees = [];
 
-    for (let record of records) {
-
+    for (const record of records) {
       const emp = await Employee.findOne({ employeeId: record.employeeId });
       if (!emp) {
         return res.status(404).json({ error: `Employee not found: ${record.employeeId}` });
+      }
+
+      const approvedLeave = await LeaveApplication.findOne({
+        employee: emp._id,
+        leaveDate: normalizedDate,
+        status: "Approved",
+      }).lean();
+
+      if (approvedLeave) {
+        blockedEmployees.push(record.employeeId);
+        continue;
       }
 
       await Attendance.findOneAndUpdate(
@@ -30,14 +43,20 @@ router.post("/", async (req, res) => {
           employee: emp._id,
           status: record.status,
           checkIn: record.checkIn || "",
-          checkOut: record.checkOut || ""
+          checkOut: record.checkOut || "",
         },
         { upsert: true, new: true }
       );
     }
 
-    res.json({ message: "Attendance saved/updated successfully" });
+    if (blockedEmployees.length && blockedEmployees.length === records.length) {
+      return res.status(400).json({
+        error: "Attendance cannot be marked on approved leave date",
+        blockedEmployees,
+      });
+    }
 
+    res.json({ message: "Attendance saved/updated successfully", blockedEmployees });
   } catch (error) {
     console.error("POST /attendance error:", error);
     res.status(500).json({ error: error.message });
@@ -53,11 +72,12 @@ router.get("/:date", async (req, res) => {
     const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
     const attendance = await Attendance.find({
-      date: { $gte: start, $lte: end }
-    }).populate("employee", "name _id").lean();
+      date: { $gte: start, $lte: end },
+    })
+      .populate("employee", "name _id")
+      .lean();
 
     res.json(attendance || []);
-
   } catch (error) {
     console.error("GET /attendance/:date error:", error);
     res.status(500).json({ error: error.message });
@@ -80,16 +100,16 @@ router.get("/employee/:employeeId", async (req, res) => {
 
     const attendance = await Attendance.find({
       employee: emp._id,
-      date: { $gte: start, $lte: end }
+      date: { $gte: start, $lte: end },
     })
       .sort({ date: 1 })
       .lean();
 
-    const cleaned = attendance.map(a => ({
+    const cleaned = attendance.map((a) => ({
       date: new Date(a.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }),
       status: a.status,
       checkIn: a.checkIn || "",
-      checkOut: a.checkOut || ""
+      checkOut: a.checkOut || "",
     }));
 
     res.json(cleaned);
