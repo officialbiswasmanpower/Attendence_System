@@ -1,6 +1,7 @@
 import express from "express";
 import LeaveApplication from "../models/LeaveApplication.js";
 import Employee from "../models/Employee.js";
+import Attendance from "../models/Attendance.js";
 import { verifyToken, allowAdminAccess } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
@@ -42,7 +43,7 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/employee/:employeeId", verifyToken, async (req, res) => {
+router.get("/employee/:employeeId", async (req, res) => {
   try {
     const { employeeId } = req.params;
     const leaves = await LeaveApplication.find({ employeeId }).sort({ createdAt: -1 }).lean();
@@ -80,6 +81,18 @@ router.patch("/:id", verifyToken, allowAdminAccess, async (req, res) => {
 
     if (!leave) {
       return res.status(404).json({ message: "Leave application not found" });
+    }
+
+    if (status === "Approved") {
+      const [year, month, day] = String(leave.leaveDate).split("-");
+      const start = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 0, 0, 0));
+      const end = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 23, 59, 59, 999));
+
+      // Ensure approved leave day cannot keep a check-in/check-out record.
+      await Attendance.deleteMany({
+        employee: leave.employee,
+        date: { $gte: start, $lte: end },
+      });
     }
 
     res.json(leave);
