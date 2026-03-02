@@ -6,7 +6,7 @@ import { verifyToken, allowAdminAccess } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { employeeId, leaveDate, reason } = req.body;
     if (!employeeId || !leaveDate || !reason) {
