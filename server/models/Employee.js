@@ -1,5 +1,24 @@
 import mongoose from "mongoose";
 
+const incrementSchema = new mongoose.Schema(
+  {
+    effectiveMonth: {
+      type: String,
+      required: true,
+      match: /^\d{4}-\d{2}$/,
+    },
+    previousSalary: {
+      type: Number,
+      required: true,
+    },
+    newSalary: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false, timestamps: true }
+);
+
 const employeeSchema = new mongoose.Schema({
   employeeId: {
     type: String,
@@ -13,6 +32,11 @@ const employeeSchema = new mongoose.Schema({
   department: String,
   position: String,
   salary: { type: Number, required: true },
+  initialSalary: { type: Number, default: null },
+  increments: {
+    type: [incrementSchema],
+    default: [],
+  },
 
   password: {
     type: String,

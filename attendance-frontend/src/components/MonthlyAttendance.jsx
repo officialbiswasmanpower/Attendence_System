@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import API from "../api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -19,12 +19,14 @@ export default function MonthlyAttendance() {
   const [showOffPicker, setShowOffPicker] = useState(false);
   const [offDate, setOffDate] = useState("");
   const [offReason, setOffReason] = useState("");
+  const [officeOffLoading, setOfficeOffLoading] = useState(false);
+  const [officeOffMessage, setOfficeOffMessage] = useState("");
 
   // ================= LOAD EMPLOYEES =================
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await API.get("/employees");
+        const res = await API.get("/employees", { params: { month } });
         const sorted = res.data.sort((a, b) => a.name.localeCompare(b.name));
         setEmployees(sorted);
       } catch (error) {
@@ -32,7 +34,7 @@ export default function MonthlyAttendance() {
       }
     };
     fetchEmployees();
-  }, []);
+  }, [month]);
 
   // ================= GET TOTAL DAYS =================
   const [year, mon] = month.split("-");
@@ -94,33 +96,60 @@ export default function MonthlyAttendance() {
     fetchLeaves();
   }, [month, employees]);
 
+  const fetchOfficeOffs = useCallback(async () => {
+    if (!month) return;
+    try {
+      const res = await API.get("/office-offs", { params: { month } });
+      setOfficeOffs((res.data || []).map((item) => ({ date: item.date, reason: item.reason })));
+    } catch (error) {
+      console.log(error);
+      setOfficeOffs([]);
+    }
+  }, [month]);
+
+  useEffect(() => {
+    fetchOfficeOffs();
+  }, [fetchOfficeOffs]);
+
   // ================= OFFICE OFF =================
-  const addOfficeOff = () => {
+  const addOfficeOff = async () => {
     if (!offDate || !offReason) return;
 
-    const existsIndex = officeOffs.findIndex((o) => o.date === offDate);
-    if (existsIndex >= 0) {
-      const updated = [...officeOffs];
-      updated[existsIndex].reason = offReason;
-      setOfficeOffs(updated);
-    } else {
-      setOfficeOffs([...officeOffs, { date: offDate, reason: offReason }]);
+    setOfficeOffLoading(true);
+    setOfficeOffMessage("");
+    try {
+      await API.post("/office-offs", { date: offDate, reason: offReason.trim() });
+      await fetchOfficeOffs();
+      setOffDate("");
+      setOffReason("");
+      setShowOffPicker(false);
+      setOfficeOffMessage("Office off saved");
+    } catch (error) {
+      console.log(error);
+      setOfficeOffMessage(error.response?.data?.message || "Unable to save office off");
+    } finally {
+      setOfficeOffLoading(false);
     }
-
-    setOffDate("");
-    setOffReason("");
-    setShowOffPicker(false);
   };
 
-  const removeOfficeOff = (date) => {
-    setOfficeOffs(officeOffs.filter((o) => o.date !== date));
+  const removeOfficeOff = async (date) => {
+    setOfficeOffLoading(true);
+    setOfficeOffMessage("");
+    try {
+      await API.delete(`/office-offs/${encodeURIComponent(date)}`);
+      await fetchOfficeOffs();
+      setOfficeOffMessage("Office off removed");
+    } catch (error) {
+      console.log(error);
+      setOfficeOffMessage(error.response?.data?.message || "Unable to remove office off");
+    } finally {
+      setOfficeOffLoading(false);
+    }
   };
 
   const officeOffDays = [
     ...sundays,
-    ...officeOffs
-      .filter((o) => o.date.startsWith(month))
-      .map((o) => Number(o.date.split("-")[2])),
+    ...officeOffs.map((o) => Number(o.date.split("-")[2])),
   ];
 
   // ================= EXPORT TO EXCEL =================
@@ -133,17 +162,21 @@ export default function MonthlyAttendance() {
       // Attendance for each day
       for (let i = 1; i <= totalDaysInMonth; i++) {
         const isOfficeOff = officeOffDays.includes(i);
-        const status = isOfficeOff ? "OFF" : empAttendance[i] || empLeaves[i] || "-";
+        const isLeaveDay = empLeaves[i] === "L";
+        const status = isOfficeOff ? "OFF" : isLeaveDay ? "L" : empAttendance[i] || "-";
         row[`Day ${i}`] = status;
       }
 
       // Calculate present, absent, salary
       const present = Object.values(empAttendance).filter((s) => s === "P").length;
-      const absent = Object.values(empAttendance).filter((s) => s === "A").length;
+      const absent = Object.entries(empAttendance).filter(
+        ([day, status]) => status === "A" && empLeaves[Number(day)] !== "L"
+      ).length;
       const paidLeaves = 2;
       const unpaidLeaves = Math.max(0, absent - paidLeaves);
-      const salaryPerDay = emp.salary / totalDaysInMonth;
-      const finalSalary = ((emp.salary) - salaryPerDay * unpaidLeaves).toFixed(2);
+      const monthSalary = Number(emp.salaryForMonth ?? emp.salary ?? 0);
+      const salaryPerDay = monthSalary / totalDaysInMonth;
+      const finalSalary = (monthSalary - salaryPerDay * unpaidLeaves).toFixed(2);
 
       row["Present"] = present;
       row["Absent"] = absent;
@@ -221,10 +254,15 @@ export default function MonthlyAttendance() {
 
                 <button
                   onClick={addOfficeOff}
+                  disabled={officeOffLoading}
                   className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded font-semibold shadow-md hover:shadow-lg transition-transform transform hover:scale-105"
                 >
-                  Add / Update
+                  {officeOffLoading ? "Saving..." : "Add / Update"}
                 </button>
+
+                {officeOffMessage && (
+                  <p className="mt-2 text-xs font-medium text-gray-700">{officeOffMessage}</p>
+                )}
 
                 {officeOffs.length > 0 && (
                   <div className="mt-3 max-h-32 overflow-y-auto border-t pt-2">
@@ -264,18 +302,22 @@ export default function MonthlyAttendance() {
               const empAttendance = attendance[emp._id] || {};
               const empLeaves = leaveByEmployee[emp.employeeId] || {};
               const present = Object.values(empAttendance).filter((s) => s === "P").length;
-              const absent = Object.values(empAttendance).filter((s) => s === "A").length;
+              const absent = Object.entries(empAttendance).filter(
+                ([day, status]) => status === "A" && empLeaves[Number(day)] !== "L"
+              ).length;
               const paidLeaves = 2;
               const unpaidLeaves = Math.max(0, absent - paidLeaves);
-              const salaryPerDay = emp.salary / totalDaysInMonth;
-              const finalSalary = ((emp.salary) - salaryPerDay * unpaidLeaves).toFixed(2);
+              const monthSalary = Number(emp.salaryForMonth ?? emp.salary ?? 0);
+              const salaryPerDay = monthSalary / totalDaysInMonth;
+              const finalSalary = (monthSalary - salaryPerDay * unpaidLeaves).toFixed(2);
 
               return (
                 <tr key={emp._id} className={`${idx % 2 === 0 ? "bg-indigo-50" : "bg-purple-50"} transition-all duration-300`}>
                   <td className="p-2 font-medium text-gray-700">{emp.name}</td>
                   {[...Array(totalDaysInMonth)].map((_, dayIndex) => {
                     const day = dayIndex + 1;
-                    const cell = empAttendance[day] || empLeaves[day] || "";
+                    const isLeaveDay = empLeaves[day] === "L";
+                    const cell = isLeaveDay ? "L" : empAttendance[day] || "";
                     const isOfficeOff = officeOffDays.includes(day);
                     const displayText = isOfficeOff ? "OFF" : cell || "-";
 

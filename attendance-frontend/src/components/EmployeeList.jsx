@@ -10,11 +10,13 @@ export default function EmployeeList() {
     department: "",
     position: "",
     salary: "",
+    incrementMonth: "",
     employeeId: "",
     email: "",
     phone: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [editingSalary, setEditingSalary] = useState(null);
   const [viewEmployee, setViewEmployee] = useState(null);
 
   const fetchEmployees = () => {
@@ -44,6 +46,12 @@ export default function EmployeeList() {
     }
 
     try {
+      const salaryChanged = editingId && Number(form.salary || 0) !== Number(editingSalary || 0);
+      if (salaryChanged && !form.incrementMonth) {
+        alert("Select increment month when changing salary.");
+        return;
+      }
+
       if (editingId) {
         await API.put(`/employees/${editingId}`, form);
       } else {
@@ -54,11 +62,13 @@ export default function EmployeeList() {
         department: "",
         position: "",
         salary: "",
+        incrementMonth: "",
         employeeId: "",
         email: "",
         phone: "",
       });
       setEditingId(null);
+      setEditingSalary(null);
       setShowModal(false);
       fetchEmployees();
     } catch (err) {
@@ -79,11 +89,13 @@ export default function EmployeeList() {
       department: emp.department,
       position: emp.position,
       salary: emp.salary,
+      incrementMonth: "",
       employeeId: emp.employeeId,
       email: emp.email || "",
       phone: emp.phone || "",
     });
     setEditingId(emp.employeeId);
+    setEditingSalary(Number(emp.salary || 0));
     setShowModal(true);
   };
 
@@ -105,10 +117,12 @@ export default function EmployeeList() {
               department: "",
               position: "",
               salary: "",
+              incrementMonth: "",
               employeeId: "",
               email: "",
               phone: "",
             });
+            setEditingSalary(null);
           }}
           className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 font-medium text-white transition-all duration-300 hover:shadow-xl sm:w-auto"
         >
@@ -318,6 +332,19 @@ export default function EmployeeList() {
                     className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 p-3"
                   />
                 </div>
+
+                {editingId && Number(form.salary || 0) !== Number(editingSalary || 0) && (
+                  <div>
+                    <label className="text-sm text-gray-600">Increment Effective Month</label>
+                    <input
+                      type="month"
+                      name="incrementMonth"
+                      value={form.incrementMonth || ""}
+                      onChange={handleChange}
+                      className="mt-1 w-full rounded-lg border border-gray-200 bg-gray-50 p-3"
+                    />
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
                   <button

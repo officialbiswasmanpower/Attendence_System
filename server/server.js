@@ -8,6 +8,7 @@ import employeeRoutes from "./routes/employeeRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import adminRoutes from "./routes/adminManagement.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
+import officeOffRoutes from "./routes/officeOffRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
@@ -74,6 +75,7 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/leaves", leaveRoutes);
+app.use("/api/office-offs", officeOffRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Only listen when running locally (not on Vercel serverless)

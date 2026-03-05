@@ -10,6 +10,7 @@ export default function EmpMonthlyAttendance({ employeeId }) {
   const [month, setMonth] = useState(getCurrentMonth());
   const [attendance, setAttendance] = useState([]);
   const [approvedLeaves, setApprovedLeaves] = useState([]);
+  const [officeOffs, setOfficeOffs] = useState([]);
   const [employee, setEmployee] = useState(null);
   const [activeDay, setActiveDay] = useState(null);
 
@@ -54,6 +55,20 @@ export default function EmpMonthlyAttendance({ employeeId }) {
     fetchLeaves();
   }, [month, employeeId]);
 
+  useEffect(() => {
+    const fetchOfficeOffs = async () => {
+      if (!month) return;
+      try {
+        const res = await API.get("/office-offs", { params: { month } });
+        setOfficeOffs(res.data || []);
+      } catch (err) {
+        console.log(err);
+        setOfficeOffs([]);
+      }
+    };
+    fetchOfficeOffs();
+  }, [month]);
+
   const [year, monthIndex] = month.split("-").map(Number);
   const totalDaysInMonth = new Date(year, monthIndex, 0).getDate();
 
@@ -85,19 +100,33 @@ export default function EmpMonthlyAttendance({ employeeId }) {
           const dateObj = new Date(year, monthIndex - 1, day);
           const dayName = getDayName(day);
           const record = attendance.find((a) => new Date(a.date).getDate() === day);
+          const officeOff = officeOffs.find((off) => Number(off.date?.split("-")[2]) === day);
+          const isOfficeOff = Boolean(officeOff);
           const hasApprovedLeave = approvedLeaves.some(
             (leave) => Number(leave.leaveDate?.split("-")[2]) === day
           );
-          const status = record ? record.status : hasApprovedLeave ? "Leave" : "-";
+          const status = isOfficeOff
+            ? "Holiday"
+            : hasApprovedLeave
+            ? "Leave"
+            : record
+            ? record.status
+            : "-";
           const isSunday = dateObj.getDay() === 0;
           const hasTimeInfo =
-            record && record.status === "Present" && (record.checkIn || record.checkOut);
+            !isOfficeOff &&
+            !hasApprovedLeave &&
+            record &&
+            record.status === "Present" &&
+            (record.checkIn || record.checkOut);
 
           const bgClass =
             status === "Present"
               ? "bg-green-100 text-green-800"
               : status === "Leave"
               ? "bg-amber-100 text-amber-800"
+              : status === "Holiday"
+              ? "bg-sky-100 text-sky-800"
               : status === "Absent"
               ? "bg-red-100 text-red-800"
               : "bg-gray-100 text-gray-600";
@@ -106,12 +135,22 @@ export default function EmpMonthlyAttendance({ employeeId }) {
             <div
               key={day}
               className={`group relative flex flex-col items-center justify-center rounded-xl p-3 text-center shadow-md transition-transform hover:scale-105 ${
-                isSunday ? "bg-red-200 font-bold text-red-800" : bgClass
+                isOfficeOff
+                  ? "bg-sky-100 font-semibold text-sky-800"
+                  : isSunday
+                  ? "bg-red-200 font-bold text-red-800"
+                  : bgClass
               }`}
+              title={isOfficeOff && officeOff?.reason ? `Holiday: ${officeOff.reason}` : ""}
             >
               <span className="text-sm text-gray-500">{dayName}</span>
               <span className="text-lg font-semibold">{day}</span>
               <span className="mt-1 text-sm">{status}</span>
+              {isOfficeOff && officeOff?.reason && (
+                <span className="mt-1 line-clamp-2 text-[11px] leading-tight text-sky-900">
+                  {officeOff.reason}
+                </span>
+              )}
 
               {hasTimeInfo && (
                 <button

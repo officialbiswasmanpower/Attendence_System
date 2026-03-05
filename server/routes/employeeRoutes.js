@@ -7,6 +7,47 @@ import { v2 as cloudinary } from "cloudinary";
 
 const router = express.Router();
 
+const monthRegex = /^\d{4}-\d{2}$/;
+
+const getSalaryForMonth = (employee, month) => {
+  if (!month || !monthRegex.test(month)) {
+    return Number(employee.salary || 0);
+  }
+
+  const sortedIncrements = [...(employee.increments || [])].sort((a, b) =>
+    String(a.effectiveMonth).localeCompare(String(b.effectiveMonth))
+  );
+
+  let resolvedSalary = Number(employee.initialSalary ?? employee.salary ?? 0);
+
+  for (const inc of sortedIncrements) {
+    if (String(inc.effectiveMonth) <= month) {
+      resolvedSalary = Number(inc.newSalary || resolvedSalary);
+    }
+  }
+
+  return resolvedSalary;
+};
+
+const withResolvedSalary = (employeeDoc, month) => {
+  const employee = employeeDoc.toObject ? employeeDoc.toObject() : employeeDoc;
+  return {
+    ...employee,
+    salaryForMonth: getSalaryForMonth(employee, month),
+  };
+};
+
+const getCurrentSalaryFromHistory = (employee) => {
+  const sortedIncrements = [...(employee.increments || [])].sort((a, b) =>
+    String(a.effectiveMonth).localeCompare(String(b.effectiveMonth))
+  );
+  let resolvedSalary = Number(employee.initialSalary ?? employee.salary ?? 0);
+  for (const inc of sortedIncrements) {
+    resolvedSalary = Number(inc.newSalary || resolvedSalary);
+  }
+  return resolvedSalary;
+};
+
 // ---------------- Employee CRUD routes ---------------- //
 
 // ADD EMPLOYEE
@@ -17,6 +58,7 @@ router.post("/", async (req, res) => {
     const count = await Employee.countDocuments();
     const employeeId = `EMP${String(count + 1).padStart(3, "0")}`;
 
+    const numericSalary = Number(salary);
     const employee = await Employee.create({
       employeeId,
       name,
@@ -24,7 +66,8 @@ router.post("/", async (req, res) => {
       phone,
       department,
       position,
-      salary,
+      salary: numericSalary,
+      initialSalary: numericSalary,
     });
 
     res.json(employee);
@@ -36,8 +79,9 @@ router.post("/", async (req, res) => {
 // GET ALL EMPLOYEES
 router.get("/", async (req, res) => {
   try {
+    const month = String(req.query.month || "");
     const employees = await Employee.find();
-    res.json(employees);
+    res.json(employees.map((emp) => withResolvedSalary(emp, month)));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -46,9 +90,10 @@ router.get("/", async (req, res) => {
 // GET EMPLOYEE BY EMPLOYEE ID
 router.get("/:employeeId", async (req, res) => {
   try {
+    const month = String(req.query.month || "");
     const employee = await Employee.findOne({ employeeId: req.params.employeeId });
     if (!employee) return res.status(404).json({ message: "Employee not found" });
-    res.json(employee);
+    res.json(withResolvedSalary(employee, month));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -57,13 +102,56 @@ router.get("/:employeeId", async (req, res) => {
 // UPDATE EMPLOYEE
 router.put("/:employeeId", async (req, res) => {
   try {
-    const employee = await Employee.findOneAndUpdate(
-      { employeeId: req.params.employeeId },
-      req.body,
-      { new: true }
-    );
+    const { incrementMonth, ...payload } = req.body;
+    const employee = await Employee.findOne({ employeeId: req.params.employeeId });
     if (!employee) return res.status(404).json({ message: "Employee not found" });
-    res.json(employee);
+
+    const currentSalary = Number(employee.salary || 0);
+    const nextSalary =
+      payload.salary !== undefined ? Number(payload.salary) : currentSalary;
+    const salaryChanged = Number.isFinite(nextSalary) && nextSalary !== currentSalary;
+
+    if (salaryChanged && incrementMonth && !monthRegex.test(String(incrementMonth))) {
+      return res.status(400).json({ message: "incrementMonth must be in YYYY-MM format" });
+    }
+
+    if (payload.salary !== undefined) {
+      employee.salary = nextSalary;
+    }
+
+    if (employee.initialSalary === undefined || employee.initialSalary === null) {
+      employee.initialSalary = currentSalary;
+    }
+
+    if (salaryChanged && incrementMonth && monthRegex.test(String(incrementMonth))) {
+      const effectiveMonth = String(incrementMonth);
+      const existingIndex = (employee.increments || []).findIndex(
+        (inc) => String(inc.effectiveMonth) === effectiveMonth
+      );
+
+      const incrementEntry = {
+        effectiveMonth,
+        previousSalary: currentSalary,
+        newSalary: nextSalary,
+      };
+
+      if (existingIndex >= 0) {
+        employee.increments[existingIndex] = incrementEntry;
+      } else {
+        employee.increments.push(incrementEntry);
+      }
+
+      employee.salary = getCurrentSalaryFromHistory(employee);
+    }
+
+    Object.keys(payload).forEach((key) => {
+      if (key !== "salary") {
+        employee[key] = payload[key];
+      }
+    });
+
+    await employee.save();
+    res.json(withResolvedSalary(employee, ""));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

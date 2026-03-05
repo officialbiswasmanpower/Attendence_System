@@ -65,8 +65,9 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
         const paidLeaves = 2;
         const unpaidLeaves = Math.max(0, absent - paidLeaves);
 
-        const empRes = await API.get(`/employees/${employeeId}`);
-        const totalSalary = Number(empRes.data.salary || 0);
+        const empRes = await API.get(`/employees/${employeeId}`, { params: { month: salaryMonth } });
+        const totalSalary = Number(empRes.data.salaryForMonth ?? empRes.data.salary ?? 0);
+        const currentSalary = Number(empRes.data.salary || 0);
         const salaryPerDay =
           totalSalary / new Date(salaryMonth.split("-")[0], salaryMonth.split("-")[1], 0).getDate();
         const finalSalary = (totalSalary - salaryPerDay * unpaidLeaves).toFixed(2);
@@ -78,6 +79,7 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
           unpaidLeaves,
           finalSalary,
           totalSalary,
+          currentSalary,
         });
       } catch (err) {
         console.log(err);
@@ -373,6 +375,10 @@ export default function EmpDetails({ employeeId, onProfileUpdate }) {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Total Salary</span>
                   <span className="font-semibold text-gray-900">Rs {salaryInfo.totalSalary}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">Current Salary</span>
+                  <span className="font-semibold text-indigo-700">Rs {salaryInfo.currentSalary}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Present Days</span>
